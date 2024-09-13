@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planet Simulation</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; }
+        #elapsed-time { position: absolute; top: 10px; left: 10px; color: white; font-family: Arial, sans-serif; }
+        #controls { position: absolute; bottom: 20px; left: 20px; color: black; font-family: Arial, sans-serif; }
+        #controls2 { position: absolute; bottom: 20px; left: 630px; color: black; font-family: Arial, sans-serif; }
+        #controls3 { position: absolute; bottom: 150px; right: 15px; color: black; font-family: Arial, sans-serif; }
+        #controls4 { position: absolute; top:20px; right: 380px; color: black; font-family: Arial, sans-serif; }
+
+
+        input, button { margin: 5px; font-size: 30; }
+        input2, button { margin: 5px; font-size: 100; }
+
+        
+    </style>
+</head>
+<body>
+    <div id="elapsed-time">Elapsed Time: 0 seconds</div>
+
+    <div id="controls">
+        <h3>Stellar remnant Star (Smallest)</h3>
+        <!-- Position Inputs -->
+        <label for="sun-x">Sun X Position:</label>
+        <input id="sun-x" type="number" step="any" value="2.988e11">
+        <label for="sun-y">Sun Y Position:</label>
+        <input id="sun-y" type="number" step="any" value="-2.988e11"><br>
+        
+    
+        <!-- Velocity Inputs -->
+        <label for="sun-x-vel">Sun X Velocity:</label>
+        <input id="sun-x-vel" type="number" step="any" value="-1.3e4">
+        <label for="sun-y-vel">Sun Y Velocity:</label>
+        <input id="sun-y-vel" type="number" step="any" value="-0.5e4"><br>
+        
+    </div>
+    <div id="controls2">
+        <h3>Dwarf Star (Middle)</h3>
+        <!-- Position Inputs -->
+
+        <label for="earth-x">Earth X Position:</label>
+        <input id="earth-x" type="number" step="any" value="0">
+        <label for="earth-y">Earth Y Position:</label>
+        <input id="earth-y" type="number" step="any" value="1.4641e11"><br>
+        
+
+        <!-- Velocity Inputs -->
+
+        <label for="earth-x-vel">Earth X Velocity:</label>
+        <input id="earth-x-vel" type="number" step="any" value="1.6e4">
+        <label for="earth-y-vel">Earth Y Velocity:</label>
+        <input id="earth-y-vel" type="number" step="any" value="0"><br>
+        
+
+        
+    </div>
+
+    <div id="controls3">
+        <h3>Giant star (largest)</h3>
+        <!-- Position Inputs -->
+
+        
+        <label for="earth2-x">Earth2 X Position:</label>
+        <input id="earth2-x" type="number" step="any" value="-2.988e11"><br>
+
+
+        <label for="earth2-y">Earth2 Y Position:</label>
+        <input id="earth2-y" type="number" step="any" value="-2.988e11"><br>
+
+        <!-- Velocity Inputs -->
+        
+        <label for="earth2-x-vel">Earth2 X Velocity:</label>
+        <input id="earth2-x-vel" type="number" step="any" value="-1.3e4"><br>
+
+        
+        <label for="earth2-y-vel">Earth2 Y Velocity:</label>
+        <input id="earth2-y-vel" type="number" step="any" value="0.7e4"><br>
+        
+    </div>
+    <div id="controls4">
+        <h3>Simulation</h3>
+        <button id="input2" onclick="startSimulation()">Run Simulation</button> 
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="sketch.js"></script>
+</body>
+</html>
