@@ -22,7 +22,7 @@ function draw() {
         const d2 = dist(sun.x, sun.y, earth2.x, earth2.y);
         const d3 = dist(earth.x, earth.y, sun.x, sun.y);
 
-        if (d1 < 0.2 * AU || d2 < 0.2 * AU || d3 < 0.2 * AU) {
+        if (d1 < 0.05 * AU || d2 < 0.05 * AU || d3 < 0.05 * AU) {
             console.log("Star Collision");
             endSimulation("Star Collision");
             return;
