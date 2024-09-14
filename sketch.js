@@ -3,6 +3,8 @@ const HEIGHT = 600;
 const AU = 1.49 * Math.pow(10, 11); // Astronomical Unit in meters
 const SCALE = 100 / AU; // Scale for drawing (1 AU = 175 pixels)
 const TIMESTEP = 90000; // 1 day in seconds
+const scaleFactor = 1e11; // To scale distances to a similar order as AU
+
 
 let sun, earth, earth2;
 let startTime;
@@ -49,21 +51,58 @@ function draw() {
 }
 
 function startSimulation() {
-    // Figure-8 Orbit Initial Conditions
-    const scaleFactor = 1e11; // To scale distances to a similar order as AU
+    // Get values from the input fields
+    const sunX = parseFloat(document.getElementById('sun-x').value);
+    const sunY = parseFloat(document.getElementById('sun-y').value);
+    const earthX = parseFloat(document.getElementById('earth-x').value);
+    const earthY = parseFloat(document.getElementById('earth-y').value);
+    const earth2X = parseFloat(document.getElementById('earth2-x').value);
+    const earth2Y = parseFloat(document.getElementById('earth2-y').value);
 
-    // Initialize planets with the new values for Figure-8 orbit
-    sun = new Planet(0.97000436 * scaleFactor, -0.24308753 * scaleFactor, 10, 'yellow', 2.989 * Math.pow(10, 30), 0, true);
-    sun.x_vel = 0.466203685 * scaleFactor / 3e7;
-    sun.y_vel = 0.43236573 * scaleFactor / 3e7;
+    // Get velocity values from the input fields
+    const sunXVel = parseFloat(document.getElementById('sun-x-vel').value);
+    const sunYVel = parseFloat(document.getElementById('sun-y-vel').value);
+    const earthXVel = parseFloat(document.getElementById('earth-x-vel').value);
+    const earthYVel = parseFloat(document.getElementById('earth-y-vel').value);
+    const earth2XVel = parseFloat(document.getElementById('earth2-x-vel').value);
+    const earth2YVel = parseFloat(document.getElementById('earth2-y-vel').value);
 
-    earth = new Planet(-0.97000436 * scaleFactor, 0.24308753 * scaleFactor, 16, 'red', 2.989 * Math.pow(10, 30), 0);
-    earth.x_vel = 0.466203685 * scaleFactor / 3e7;
-    earth.y_vel = 0.43236573 * scaleFactor / 3e7;
 
-    earth2 = new Planet(0, 0, 28, 'white', 2.989 * Math.pow(10, 30), 0);
-    earth2.x_vel = -0.93240737 * scaleFactor / 3e7;
-    earth2.y_vel = -0.86473146 * scaleFactor / 3e7;
+    
+    const sun = {
+        x: 0.97000436 * scaleFactor,
+        y: -0.24308753 * scaleFactor,
+        vx: 0.466203685 * scaleFactor / 3e7, // Velocity scaled to match time step
+        vy: 0.43236573 * scaleFactor / 3e7
+    };
+    const earth = {
+        x: -0.97000436 * scaleFactor,
+        y: 0.24308753 * scaleFactor,
+        vx: 0.466203685 * scaleFactor / 3e7,
+        vy: 0.43236573 * scaleFactor / 3e7
+    };
+
+    const earth2 = {
+        x: 0,
+        y: 0,
+        vx: -0.93240737 * scaleFactor / 3e7,
+        vy: -0.86473146 * scaleFactor / 3e7
+    };
+
+
+    
+    // Initialize planets with the new values
+    sun = new Planet(sunX, sunY, 10, 'yellow', 2.989 * Math.pow(10, 30), 0, true);
+    sun.y_vel = sunYVel;
+    sun.x_vel = sunXVel;
+
+    earth = new Planet(earthX, earthY, 16, 'red', 2.989 * Math.pow(10, 30), 0);
+    earth.x_vel = earthXVel;
+    earth.y_vel = earthYVel;
+
+    earth2 = new Planet(earth2X, earth2Y, 28, 'white', 2.989 * Math.pow(10, 30), 0);
+    earth2.x_vel = earth2XVel;
+    earth2.y_vel = earth2YVel;
 
     startTime = millis(); // Record the start time
     simulationRunning = true;
