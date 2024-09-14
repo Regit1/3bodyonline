@@ -1,182 +1,177 @@
-const WIDTH = 1000;
-const HEIGHT = 600;
-const AU = 1.49 * Math.pow(10, 11); // Astronomical Unit in meters
-const SCALE = 100 / AU; // Scale for drawing (1 AU = 175 pixels)
+const G = 6.67428e-11; // Gravitational constant
+const MASS = 2.989e30; // Mass of each body
 const TIMESTEP = 90000; // 1 day in seconds
 
 let sun, earth, earth2;
+let planets = [];
 let startTime;
 let simulationRunning = false;
+let scaleFactor = 1e11; // Initial scale factor
+let zoomLevel = 1;
+let panX = 0, panY = 0;
 
 function setup() {
-    createCanvas(WIDTH, HEIGHT);
-    noLoop(); // Stop the draw loop until the simulation starts
+    createCanvas(windowWidth, windowHeight);
+    noLoop();
+    setupInitialConditions();
+    createButtons();
+}
+
+function setupInitialConditions() {
+    sun = new Planet(0.97000436, -0.24308753, 0.466203685, 0.43236573, 10, 'yellow', true);
+    earth = new Planet(-0.97000436, 0.24308753, 0.466203685, 0.43236573, 16, 'red');
+    earth2 = new Planet(0, 0, -0.93240737, -0.86473146, 28, 'white');
+    planets = [sun, earth, earth2];
+}
+
+function createButtons() {
+    let startButton = createButton('Start Simulation');
+    startButton.position(10, 10);
+    startButton.mousePressed(startSimulation);
+
+    let resetButton = createButton('Reset Simulation');
+    resetButton.position(140, 10);
+    resetButton.mousePressed(resetSimulation);
+
+    let zoomInButton = createButton('Zoom In');
+    zoomInButton.position(270, 10);
+    zoomInButton.mousePressed(() => zoomLevel *= 1.1);
+
+    let zoomOutButton = createButton('Zoom Out');
+    zoomOutButton.position(340, 10);
+    zoomOutButton.mousePressed(() => zoomLevel /= 1.1);
 }
 
 function draw() {
     background(0);
+    translate(width / 2 + panX, height / 2 + panY);
+    scale(zoomLevel);
 
     if (simulationRunning) {
-        // Calculate distances
-        const d1 = dist(earth.x, earth.y, earth2.x, earth2.y);
-        const d2 = dist(sun.x, sun.y, earth2.x, earth2.y);
-        const d3 = dist(earth.x, earth.y, sun.x, sun.y);
-
-        if (d1 < 0.2 * AU || d2 < 0.2 * AU || d3 < 0.2 * AU) {
-            console.log("Star Collision");
-            endSimulation("Star Collision");
-            return;
-        }
-
-        if (d1 > 7 * AU || d2 > 7 * AU || d3 > 7 * AU) {
-            console.log("Star Ejected");
-            endSimulation("Star Ejected");
-            return;
-        }
-
-        // Update and draw planets
-        sun.updatePosition([earth, earth2]);
-        earth.updatePosition([sun, earth2]);
-        earth2.updatePosition([sun, earth]);
-
-        sun.draw();
-        earth.draw();
-        earth2.draw();
-
-        // Update the elapsed time display
+        updatePlanets();
+        checkCollisionOrEjection();
         updateElapsedTime();
+    }
+
+    planets.forEach(planet => planet.draw());
+}
+
+function updatePlanets() {
+    planets.forEach(planet => planet.updatePosition(planets));
+}
+
+function checkCollisionOrEjection() {
+    const d1 = dist(earth.x, earth.y, earth2.x, earth2.y);
+    const d2 = dist(sun.x, sun.y, earth2.x, earth2.y);
+    const d3 = dist(earth.x, earth.y, sun.x, sun.y);
+
+    if (d1 < 0.1 || d2 < 0.1 || d3 < 0.1) {
+        endSimulation("Star Collision");
+    } else if (d1 > 10 || d2 > 10 || d3 > 10) {
+        endSimulation("Star Ejected");
     }
 }
 
 function startSimulation() {
-    // Get values from the input fields
-    const sunX = parseFloat(document.getElementById('sun-x').value);
-    const sunY = parseFloat(document.getElementById('sun-y').value);
-    const earthX = parseFloat(document.getElementById('earth-x').value);
-    const earthY = parseFloat(document.getElementById('earth-y').value);
-    const earth2X = parseFloat(document.getElementById('earth2-x').value);
-    const earth2Y = parseFloat(document.getElementById('earth2-y').value);
-
-    // Get velocity values from the input fields
-    const sunXVel = parseFloat(document.getElementById('sun-x-vel').value);
-    const sunYVel = parseFloat(document.getElementById('sun-y-vel').value);
-    const earthXVel = parseFloat(document.getElementById('earth-x-vel').value);
-    const earthYVel = parseFloat(document.getElementById('earth-y-vel').value);
-    const earth2XVel = parseFloat(document.getElementById('earth2-x-vel').value);
-    const earth2YVel = parseFloat(document.getElementById('earth2-y-vel').value);
-
-    // Initialize planets with the new values
-    sun = new Planet(sunX, sunY, 10, 'yellow', 2.989 * Math.pow(10, 30), 0, true);
-    sun.y_vel = sunYVel;
-    sun.x_vel = sunXVel;
-
-    earth = new Planet(earthX, earthY, 16, 'red', 2.989 * Math.pow(10, 30), 0);
-    earth.x_vel = earthXVel;
-    earth.y_vel = earthYVel;
-
-    earth2 = new Planet(earth2X, earth2Y, 28, 'white', 2.989 * Math.pow(10, 30), 0);
-    earth2.x_vel = earth2XVel;
-    earth2.y_vel = earth2YVel;
-
-    startTime = millis(); // Record the start time
+    setupInitialConditions();
+    startTime = millis();
     simulationRunning = true;
-    loop(); // Start the draw loop
+    loop();
+}
+
+function resetSimulation() {
+    setupInitialConditions();
+    simulationRunning = false;
+    zoomLevel = 1;
+    panX = 0;
+    panY = 0;
+    document.getElementById('elapsed-time').textContent = 'Elapsed Time: 0.00 seconds (0.00 days)';
+    redraw();
 }
 
 function endSimulation(reason) {
     simulationRunning = false;
-    noLoop(); // Stop the draw loop
-    let elapsedTimeMs = millis() - startTime; // Elapsed time in milliseconds
-    let elapsedTimeSec = elapsedTimeMs / 1000; // Convert milliseconds to seconds
-    let daysElapsed = elapsedTimeSec * 263.5; // Convert seconds to days
-
+    noLoop();
+    let elapsedTimeMs = millis() - startTime;
+    let elapsedTimeSec = elapsedTimeMs / 1000;
+    let daysElapsed = elapsedTimeSec * TIMESTEP / 86400;
     document.getElementById('elapsed-time').textContent = `Simulation ended: ${reason}. Elapsed Time: ${elapsedTimeSec.toFixed(2)} seconds (${daysElapsed.toFixed(2)} days)`;
 }
 
 function updateElapsedTime() {
-    if (simulationRunning) {
-        let elapsedTimeMs = millis() - startTime;
-        let elapsedTimeSec = elapsedTimeMs / 1000;
-        let daysElapsed = elapsedTimeSec * 263.5;
-        document.getElementById('elapsed-time').textContent = `Elapsed Time: ${elapsedTimeSec.toFixed(2)} seconds (${daysElapsed.toFixed(2)} days)`;
-    }
+    let elapsedTimeMs = millis() - startTime;
+    let elapsedTimeSec = elapsedTimeMs / 1000;
+    let daysElapsed = elapsedTimeSec * TIMESTEP / 86400;
+    document.getElementById('elapsed-time').textContent = `Elapsed Time: ${elapsedTimeSec.toFixed(2)} seconds (${daysElapsed.toFixed(2)} days)`;
 }
 
 class Planet {
-    constructor(x, y, radius, color, mass, charge, isSun = false) {
-        this.x = x;
-        this.y = y;
+    constructor(x, y, vx, vy, radius, color, isSun = false) {
+        this.x = x * scaleFactor;
+        this.y = y * scaleFactor;
+        this.vx = vx * scaleFactor / 3e7;
+        this.vy = vy * scaleFactor / 3e7;
         this.radius = radius;
         this.color = color;
-        this.mass = mass;
-        this.charge = charge;
-        this.orbit = [];
+        this.mass = MASS;
         this.sun = isSun;
-        this.distance_to_sun = 0;
-        this.x_vel = 0;
-        this.y_vel = 0;
+        this.trail = [];
     }
 
     draw() {
-        fill(this.color);
-        let x = this.x * SCALE + WIDTH / 2;
-        let y = this.y * SCALE + HEIGHT / 2;
-
-        // Draw orbit path
-        if (this.orbit.length > 1) {
-            noFill();
-            stroke(255);
-            strokeWeight(2);
-            beginShape();
-            for (let [px, py] of this.orbit) {
-                let screenX = px * SCALE + WIDTH / 2;
-                let screenY = py * SCALE + HEIGHT / 2;
-                vertex(screenX, screenY);
-            }
-            endShape();
+        // Draw trail
+        stroke(this.color);
+        strokeWeight(1);
+        noFill();
+        beginShape();
+        for (let pos of this.trail) {
+            vertex(pos.x, pos.y);
         }
+        endShape();
 
-        // Draw the planet
-        ellipse(x, y, this.radius * 2);
+        // Draw planet
+        fill(this.color);
+        noStroke();
+        ellipse(this.x, this.y, this.radius * 2);
     }
 
     attraction(other) {
-        let other_x = other.x;
-        let other_y = other.y;
-        let distance_x = other_x - this.x;
-        let distance_y = other_y - this.y;
-        let distance = Math.sqrt(distance_x ** 2 + distance_y ** 2);
-
-        if (other.sun) {
-            this.distance_to_sun = distance;
-        }
-
-        let forceg = (6.67428e-11) * this.mass * other.mass / Math.pow(distance, 2);
-        let theta = Math.atan2(distance_y, distance_x);
-        let force_xg = Math.cos(theta) * forceg;
-        let force_yg = Math.sin(theta) * forceg;
-
-        let forcec = (9.0e9) * this.charge * other.charge / Math.pow(distance, 2);
-        let force_xc = Math.cos(theta) * forcec;
-        let force_yc = Math.sin(theta) * forcec;
-
-        return [force_xc + force_xg, force_yc + force_yg];
+        let dx = other.x - this.x;
+        let dy = other.y - this.y;
+        let distance = sqrt(dx * dx + dy * dy);
+        let force = G * this.mass * other.mass / (distance * distance);
+        let theta = atan2(dy, dx);
+        return [force * cos(theta), force * sin(theta)];
     }
 
     updatePosition(planets) {
-        let total_fx = 0;
-        let total_fy = 0;
+        let fx = 0, fy = 0;
         for (let planet of planets) {
-            if (this === planet) continue;
-            let [fx, fy] = this.attraction(planet);
-            total_fx += fx;
-            total_fy += fy;
+            if (planet !== this) {
+                let [ffx, ffy] = this.attraction(planet);
+                fx += ffx;
+                fy += ffy;
+            }
         }
 
-        this.x_vel += total_fx / this.mass * TIMESTEP;
-        this.y_vel += total_fy / this.mass * TIMESTEP;
-        this.x += this.x_vel * TIMESTEP;
-        this.y += this.y_vel * TIMESTEP;
-        this.orbit.push([this.x, this.y]);
+        let ax = fx / this.mass;
+        let ay = fy / this.mass;
+
+        this.vx += ax * TIMESTEP;
+        this.vy += ay * TIMESTEP;
+        this.x += this.vx * TIMESTEP;
+        this.y += this.vy * TIMESTEP;
+
+        this.trail.push({x: this.x, y: this.y});
+        if (this.trail.length > 1000) this.trail.shift();
     }
+}
+
+function mouseDragged() {
+    panX += mouseX - pmouseX;
+    panY += mouseY - pmouseY;
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
 }
