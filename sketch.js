@@ -1,7 +1,7 @@
 const WIDTH = 1000;
-const HEIGHT = 600;
+const HEIGHT = 800;
 const AU = 1.49 * Math.pow(10, 11); // Astronomical Unit in meters
-const SCALE = 100 / AU; // Scale for drawing (1 AU = 175 pixels)
+const SCALE = 75 / AU; // Scale for drawing (1 AU = 175 pixels)
 const TIMESTEP = 90000; // 1 day in seconds
 
 let sun, earth, earth2;
