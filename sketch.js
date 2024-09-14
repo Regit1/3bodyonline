@@ -8,7 +8,6 @@ let sun, earth, earth2;
 let startTime;
 let simulationRunning = false;
 
-
 function setup() {
     createCanvas(WIDTH, HEIGHT);
     noLoop(); // Stop the draw loop until the simulation starts
@@ -25,20 +24,20 @@ function draw() {
 
         if (d1 < 0.2 * AU || d2 < 0.2 * AU || d3 < 0.2 * AU) {
             console.log("Star Collision");
-            endSimulation();
+            endSimulation("Star Collision");
             return;
         }
 
         if (d1 > 7 * AU || d2 > 7 * AU || d3 > 7 * AU) {
             console.log("Star Ejected");
-            endSimulation();
+            endSimulation("Star Ejected");
             return;
         }
 
         // Update and draw planets
-        sun.updatePosition([sun, earth, earth2]);
-        earth.updatePosition([sun, earth, earth2]);
-        earth2.updatePosition([sun, earth, earth2]);
+        sun.updatePosition([earth, earth2]);
+        earth.updatePosition([sun, earth2]);
+        earth2.updatePosition([sun, earth]);
 
         sun.draw();
         earth.draw();
@@ -67,7 +66,7 @@ function startSimulation() {
     const earth2YVel = parseFloat(document.getElementById('earth2-y-vel').value);
 
     // Initialize planets with the new values
-    sun = new Planet(sunX, sunY, 10, 'yellow', 2.989 * Math.pow(10, 30), 0);
+    sun = new Planet(sunX, sunY, 10, 'yellow', 2.989 * Math.pow(10, 30), 0, true);
     sun.y_vel = sunYVel;
     sun.x_vel = sunXVel;
 
@@ -84,26 +83,27 @@ function startSimulation() {
     loop(); // Start the draw loop
 }
 
-function endSimulation() {
+function endSimulation(reason) {
     simulationRunning = false;
     noLoop(); // Stop the draw loop
     let elapsedTimeMs = millis() - startTime; // Elapsed time in milliseconds
     let elapsedTimeSec = elapsedTimeMs / 1000; // Convert milliseconds to seconds
     let daysElapsed = elapsedTimeSec * 263.5; // Convert seconds to days
 
-    document.getElementById('elapsed-time').textContent = `Elapsed Time: ${elapsedTimeSec.toFixed(2)} seconds (${daysElapsed.toFixed(2)} days)`;
+    document.getElementById('elapsed-time').textContent = `Simulation ended: ${reason}. Elapsed Time: ${elapsedTimeSec.toFixed(2)} seconds (${daysElapsed.toFixed(2)} days)`;
 }
 
 function updateElapsedTime() {
     if (simulationRunning) {
         let elapsedTimeMs = millis() - startTime;
         let elapsedTimeSec = elapsedTimeMs / 1000;
-        document.getElementById('elapsed-time').textContent = `Elapsed Time: ${elapsedTimeSec.toFixed(2)} seconds`;
+        let daysElapsed = elapsedTimeSec * 263.5;
+        document.getElementById('elapsed-time').textContent = `Elapsed Time: ${elapsedTimeSec.toFixed(2)} seconds (${daysElapsed.toFixed(2)} days)`;
     }
 }
 
 class Planet {
-    constructor(x, y, radius, color, mass, charge) {
+    constructor(x, y, radius, color, mass, charge, isSun = false) {
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -111,7 +111,7 @@ class Planet {
         this.mass = mass;
         this.charge = charge;
         this.orbit = [];
-        this.sun = false;
+        this.sun = isSun;
         this.distance_to_sun = 0;
         this.x_vel = 0;
         this.y_vel = 0;
